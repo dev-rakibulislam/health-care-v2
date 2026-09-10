@@ -1,0 +1,13 @@
+import Footer from "@/components/layout/public/footer";
+import Header from "@/components/layout/public/header";
+import type { ReactNode } from "react";
+
+export default function layout({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <Header />
+      <main className="flex-1">{children}</main>
+      <Footer />
+    </>
+  );
+}
