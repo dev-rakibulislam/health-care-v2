@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useForm } from "@tanstack/react-form";
-import { LoginZodSchema } from "@/validation";
 import { useState } from "react";
 import { Eye, EyeClosed } from "lucide-react";
 import { useGoogleOLogin, useLogin } from "@/hooks";
@@ -21,41 +20,35 @@ import { Spinner } from "../ui/spinner";
 import { useRouter } from "next/navigation";
 import { GoogleLogin } from "@react-oauth/google";
 import Link from "next/link";
+import { PatientRegistrationZodSchema } from "@/validation";
+import z from "zod";
 
-export function LoginForm({
+export function RegistrationForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { mutate: login, isPending: loginPending } = useLogin();
   const { mutate: googleLogin } = useGoogleOLogin();
   const router = useRouter();
 
+  type registrationType = z.infer<typeof PatientRegistrationZodSchema>;
+  const defaultValues: registrationType = {
+    name: "",
+    email: "",
+    contactNumber: "",
+    password: "",
+    confirmPassword: "",
+  };
   const form = useForm({
-    defaultValues: {
-      email: "superadmin@gmail.com",
-      password: "Super@admin12345",
-    },
-    validators: { onSubmit: LoginZodSchema },
+    defaultValues,
+    validators: { onSubmit: PatientRegistrationZodSchema },
     onSubmit: ({ value }) => {
-      const loginData = {
+      const registrationData = {
         email: value.email,
         password: value.password,
       };
-      login(loginData, {
-        onSuccess: (res) => {
-          toast.add({
-            title: res.message,
-          });
-          router.push("/");
-        },
-        onError: () => {
-          toast.add({
-            title: "Authorization Failure",
-            description: "something went wrong. Please try again",
-          });
-        },
-      });
     },
   });
 
@@ -90,7 +83,7 @@ export function LoginForm({
       },
     );
   };
-  
+
   const handleGoogleLoginError = () => {
     toast.add({
       title: "fail to google login",
@@ -111,11 +104,38 @@ export function LoginForm({
           >
             <FieldGroup>
               <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold">Welcome back</h1>
+                <h1 className="text-2xl font-bold">Welcome</h1>
                 <p className="text-balance text-muted-foreground">
-                  Login to your Health Care account
+                  Create your Health Care account
                 </p>
               </div>
+
+              <form.Field name="name">
+                {(field) => {
+                  const isValid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field>
+                      <FieldLabel htmlFor={field.name}>name</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="text"
+                        placeholder="John Doe"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isValid}
+                      />
+
+                      {isValid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+
               <form.Field name="email">
                 {(field) => {
                   const isValid =
@@ -142,6 +162,34 @@ export function LoginForm({
                 }}
               </form.Field>
 
+              <form.Field name="contactNumber">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field>
+                      {" "}
+                      <FieldLabel htmlFor={field.name}>
+                        {" "}
+                        Phone Number{" "}
+                      </FieldLabel>{" "}
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="tel"
+                        placeholder="+880 1XXXXXXXXX"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                      />{" "}
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}{" "}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+
               <form.Field name="password">
                 {(field) => {
                   const isValid =
@@ -149,15 +197,8 @@ export function LoginForm({
 
                   return (
                     <Field>
-                      <div className="flex items-center">
-                        <FieldLabel htmlFor="password">Password</FieldLabel>
-                        <a
-                          href="/"
-                          className="ml-auto text-sm underline-offset-2 hover:underline"
-                        >
-                          Forgot your password?
-                        </a>
-                      </div>
+                      <FieldLabel htmlFor="password">Password</FieldLabel>
+
                       <div className="relative">
                         <Input
                           id={field.name}
@@ -188,6 +229,50 @@ export function LoginForm({
                   );
                 }}
               </form.Field>
+
+              <form.Field name="confirmPassword">
+                {(field) => {
+                  const isValid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field>
+                      {" "}
+                      <FieldLabel htmlFor="password">
+                        Confirm Password
+                      </FieldLabel>
+                      <div className="relative">
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={field.state.value}
+                          aria-invalid={isValid}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+
+                        <button
+                          type="button"
+                          className="absolute right-5 top-1/2 -translate-y-1/2"
+                          onClick={() =>
+                            setShowConfirmPassword((prev) => !prev)
+                          }
+                        >
+                          {showConfirmPassword ? (
+                            <EyeClosed size={20} />
+                          ) : (
+                            <Eye size={20} />
+                          )}
+                        </button>
+                      </div>
+                      {isValid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
+
               <Field>
                 <Button disabled={loginPending} type="submit">
                   {loginPending ? <Spinner className="size-7" /> : "submit"}
@@ -203,16 +288,16 @@ export function LoginForm({
                 />
               </Field>
               <FieldDescription className="text-center">
-                Don&apos;t have an account? <Link href={"/registration"}>registration</Link>
+                already have an account? <Link href="/login">login</Link>
               </FieldDescription>
             </FieldGroup>
           </form>
-          <div className="relative hidden bg-muted md:block">
+          <div className="">
             {/** biome-ignore lint/performance/noImgElement: <explanation> */}
             <img
-              src="login.avif"
-              alt="login"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              src="registration.avif"
+              alt="registration"
+              className=" object-center h-full dark:brightness-[0.2] dark:grayscale"
             />
           </div>
         </CardContent>

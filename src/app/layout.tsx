@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import Providers from "@/providers";
+import { Toaster } from "@/components/ui/toast";
+import GoogleAuthProvider from "@/providers/google-auth.provider";
 
 const playfairDisplayHeading = Playfair_Display({
   subsets: ["latin"],
@@ -42,7 +44,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <link rel="icon" href="/logo.jfif"></link>
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+        <GoogleAuthProvider>
+          <Providers>
+            {children} <Toaster />
+          </Providers>
+        </GoogleAuthProvider>
       </body>
     </html>
   );

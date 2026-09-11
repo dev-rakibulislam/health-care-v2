@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import {
   environmentManager,
   QueryClient,
@@ -16,7 +16,7 @@ function makeQueryClient() {
   });
 }
 
-let browserQueryClient: QueryClient | undefined ;
+let browserQueryClient: QueryClient | undefined;
 
 function getQueryClient() {
   if (environmentManager.isServer()) {
